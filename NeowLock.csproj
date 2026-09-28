@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="local.props" Condition="Exists('local.props')" />
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RitsuLibReferenceTarget>0.111.0</RitsuLibReferenceTarget>
+  </PropertyGroup>
+  <Import Project="$(RitsuLibDir)/RitsuLib.References.props" Condition="Exists('$(RitsuLibDir)/RitsuLib.References.props')" />
+  <ItemGroup>
+    <Reference Include="sts2" HintPath="$(Sts2Dir)/data_sts2_windows_x86_64/sts2.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(Sts2Dir)/data_sts2_windows_x86_64/0Harmony.dll" Private="false" />
+    <Reference Include="GodotSharp" HintPath="$(Sts2Dir)/data_sts2_windows_x86_64/GodotSharp.dll" Private="false" />
+  </ItemGroup>
+  <Target Name="ValidateLocalDependencies" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(Sts2Dir)/data_sts2_windows_x86_64/sts2.dll')" Text="Set Sts2Dir in local.props to the Slay the Spire 2 installation." />
+    <Error Condition="!Exists('$(RitsuLibDir)/RitsuLib.References.props')" Text="Set RitsuLibDir in local.props to the complete RitsuLib installation." />
+  </Target>
+</Project>

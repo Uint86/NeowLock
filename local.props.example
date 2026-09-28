@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <Sts2Dir>D:/Program Files/Steam/steamapps/common/Slay the Spire 2</Sts2Dir>
+    <RitsuLibDir>D:/Program Files/Steam/steamapps/workshop/content/2868840/3747602295</RitsuLibDir>
+  </PropertyGroup>
+</Project>
