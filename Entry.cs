@@ -53,6 +53,17 @@ public static class Entry
                     GetAvailableChoices,
                     ModSettingsText.Literal(
                         "仅单人标准开局。筛选原版种子，不添加选项；如输入的种子不符合，也会换种。 / Standard single-player only. Rolls natural seeds and may replace a typed seed."),
+                    ModSettingsChoicePresentation.Dropdown)
+                .AddDynamicChoice(
+                    "first_act",
+                    ModSettingsText.Literal("第一层地区 / First act"),
+                    new ModSettingsValueBinding<NeowLockSettings, string>(
+                        ModId, SettingsKey, SaveScope.Global,
+                        settings => settings.FirstAct,
+                        (settings, firstAct) => settings.FirstAct = firstAct),
+                    GetAvailableActChoices,
+                    ModSettingsText.Literal(
+                        "按原版地区抽取结果筛选种子；可与捏奥选项同时固定。 / Rolls native seeds and can be combined with the Neow option lock."),
                     ModSettingsChoicePresentation.Dropdown)));
 
         var patcher = RitsuLibFramework.CreatePatcher(ModId, "run-seed", "Neow seed selection");
@@ -62,6 +73,16 @@ public static class Entry
 
     internal static string RequiredRelicId =>
         RitsuLibFramework.GetDataStore(ModId).Get<NeowLockSettings>(SettingsKey).RelicId;
+
+    internal static string RequiredFirstAct =>
+        RitsuLibFramework.GetDataStore(ModId).Get<NeowLockSettings>(SettingsKey).FirstAct;
+
+    private static IReadOnlyList<ModSettingsChoiceOption<string>> GetAvailableActChoices() =>
+    [
+        new(string.Empty, ModSettingsText.Literal("不固定 / Vanilla random")),
+        new("overgrowth", ModSettingsText.Literal("密林 / Overgrowth")),
+        new("underdocks", ModSettingsText.Literal("暗港 / Underdocks")),
+    ];
 
     private static IReadOnlyList<ModSettingsChoiceOption<string>> GetAvailableChoices()
     {

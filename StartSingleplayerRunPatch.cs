@@ -24,7 +24,7 @@ internal sealed class StartSingleplayerRunPatch : IPatchMethod
 
     public static bool Prefix(
         CharacterModel character,
-        IReadOnlyList<ActModel> acts,
+        ref IReadOnlyList<ActModel> acts,
         IReadOnlyList<ModifierModel> modifiers,
         GameMode gameMode,
         int ascensionLevel,
@@ -35,21 +35,24 @@ internal sealed class StartSingleplayerRunPatch : IPatchMethod
             return true;
 
         var requiredRelicId = Entry.RequiredRelicId;
-        if (string.IsNullOrWhiteSpace(requiredRelicId))
+        var requiredFirstAct = Entry.RequiredFirstAct;
+        if (string.IsNullOrWhiteSpace(requiredRelicId) && string.IsNullOrWhiteSpace(requiredFirstAct))
             return true;
 
         try
         {
             var selected = NeowSeedSelector.FindMatchingSeed(
-                character, acts, modifiers, gameMode, ascensionLevel, seed, requiredRelicId);
-            Entry.Logger.Info($"Neow seed roll: relic={requiredRelicId}, attempts={selected.Attempts}, seed={selected.Seed}");
+                character, acts, modifiers, gameMode, ascensionLevel, seed,
+                requiredRelicId, requiredFirstAct);
+            Entry.Logger.Info($"Run seed roll: relic={requiredRelicId}, firstAct={requiredFirstAct}, attempts={selected.Attempts}, seed={selected.Seed}");
             seed = selected.Seed;
+            acts = selected.Acts;
             return true;
         }
         catch (Exception error)
         {
             // Propagate through the game's existing async start-run error path; never start a nonmatching run.
-            Entry.Logger.Error($"Neow seed roll failed: {error}");
+            Entry.Logger.Error($"Run seed roll failed: {error}");
             __result = Task.FromException<RunState>(error);
             return false;
         }
