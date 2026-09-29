@@ -36,15 +36,21 @@ internal sealed class StartSingleplayerRunPatch : IPatchMethod
 
         var requiredRelicId = Entry.RequiredRelicId;
         var requiredFirstAct = Entry.RequiredFirstAct;
-        if (string.IsNullOrWhiteSpace(requiredRelicId) && string.IsNullOrWhiteSpace(requiredFirstAct))
+        var requiredSecondActRelicId = Entry.RequiredSecondActRelicId;
+        var requiredThirdActRelicId = Entry.RequiredThirdActRelicId;
+        if (string.IsNullOrWhiteSpace(requiredRelicId) &&
+            string.IsNullOrWhiteSpace(requiredFirstAct) &&
+            string.IsNullOrWhiteSpace(requiredSecondActRelicId) &&
+            string.IsNullOrWhiteSpace(requiredThirdActRelicId))
             return true;
 
         try
         {
             var selected = NeowSeedSelector.FindMatchingSeed(
-                character, acts, modifiers, gameMode, ascensionLevel, seed,
-                requiredRelicId, requiredFirstAct);
-            Entry.Logger.Info($"Run seed roll: relic={requiredRelicId}, firstAct={requiredFirstAct}, attempts={selected.Attempts}, seed={selected.Seed}");
+                character, modifiers, gameMode, ascensionLevel, seed,
+                requiredRelicId, requiredFirstAct,
+                requiredSecondActRelicId, requiredThirdActRelicId);
+            Entry.Logger.Info($"Run seed roll: Neow={requiredRelicId}, firstAct={requiredFirstAct}, act2={requiredSecondActRelicId}, act3={requiredThirdActRelicId}, attempts={selected.Attempts}, seed={selected.Seed}");
             seed = selected.Seed;
             acts = selected.Acts;
             return true;

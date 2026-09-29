@@ -64,6 +64,28 @@ public static class Entry
                     GetAvailableActChoices,
                     ModSettingsText.Literal(
                         "按原版地区抽取结果筛选种子；可与捏奥选项同时固定。 / Rolls native seeds and can be combined with the Neow option lock."),
+                    ModSettingsChoicePresentation.Dropdown)
+                .AddDynamicChoice(
+                    "second_act_relic",
+                    ModSettingsText.Literal("第二层先古遗物 / Act 2 Ancient relic"),
+                    new ModSettingsValueBinding<NeowLockSettings, string>(
+                        ModId, SettingsKey, SaveScope.Global,
+                        settings => settings.SecondActRelicId,
+                        (settings, relicId) => settings.SecondActRelicId = relicId),
+                    () => GetAvailableAncientChoices(1),
+                    ModSettingsText.Literal(
+                        "要求全解锁存档；按抵达先古时仍满足选项条件来预测。 / Requires full unlocks and the reward conditions to remain true."),
+                    ModSettingsChoicePresentation.Dropdown)
+                .AddDynamicChoice(
+                    "third_act_relic",
+                    ModSettingsText.Literal("第三层先古遗物 / Act 3 Ancient relic"),
+                    new ModSettingsValueBinding<NeowLockSettings, string>(
+                        ModId, SettingsKey, SaveScope.Global,
+                        settings => settings.ThirdActRelicId,
+                        (settings, relicId) => settings.ThirdActRelicId = relicId),
+                    () => GetAvailableAncientChoices(2),
+                    ModSettingsText.Literal(
+                        "仅筛选原版自然选项；途中改变牌组或遗物可能改变结果。 / Native choices only; changing your deck or relics can change them."),
                     ModSettingsChoicePresentation.Dropdown)));
 
         var patcher = RitsuLibFramework.CreatePatcher(ModId, "run-seed", "Neow seed selection");
@@ -76,6 +98,12 @@ public static class Entry
 
     internal static string RequiredFirstAct =>
         RitsuLibFramework.GetDataStore(ModId).Get<NeowLockSettings>(SettingsKey).FirstAct;
+
+    internal static string RequiredSecondActRelicId =>
+        RitsuLibFramework.GetDataStore(ModId).Get<NeowLockSettings>(SettingsKey).SecondActRelicId;
+
+    internal static string RequiredThirdActRelicId =>
+        RitsuLibFramework.GetDataStore(ModId).Get<NeowLockSettings>(SettingsKey).ThirdActRelicId;
 
     private static IReadOnlyList<ModSettingsChoiceOption<string>> GetAvailableActChoices() =>
     [
@@ -97,6 +125,28 @@ public static class Entry
         foreach (var option in ModelDb.Event<Neow>().AllPossibleOptions)
         {
             if (option.Relic is not { } relic || !seen.Add(relic.Id.Entry))
+                continue;
+            choices.Add(new(relic.Id.Entry, ModSettingsText.LocString(relic.Title, relic.Id.Entry)));
+        }
+        return choices;
+    }
+
+    private static IReadOnlyList<ModSettingsChoiceOption<string>> GetAvailableAncientChoices(int actIndex)
+    {
+        var choices = new List<ModSettingsChoiceOption<string>>
+        {
+            new(string.Empty, ModSettingsText.Literal("不固定 / Vanilla random")),
+        };
+        if (!_modelsReady)
+            return choices;
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var ancient in AncientRewardCatalog.ForAct(actIndex))
+        foreach (var option in ancient.AllPossibleOptions)
+        {
+            if (option.Relic is not { } relic ||
+                !AncientRewardCatalog.IsAvailableOnAct(actIndex, relic.Id.Entry) ||
+                !seen.Add(relic.Id.Entry))
                 continue;
             choices.Add(new(relic.Id.Entry, ModSettingsText.LocString(relic.Title, relic.Id.Entry)));
         }
